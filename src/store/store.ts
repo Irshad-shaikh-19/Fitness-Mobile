@@ -6,7 +6,7 @@ import storage from "redux-persist/lib/storage";
 // import { ottApi } from './api/ottApi';
 
 // ===== Regular Reducers (will be added as you create them) =====
-// import authReducer from './slices/authSlice';
+import authReducer from "./slice/authSlice";
 
 // ===== Persist Configuration =====
 const authPersistConfig = {
@@ -19,7 +19,7 @@ const authPersistConfig = {
 // ===== Combine Reducers =====
 const rootReducer = combineReducers({
   // Regular reducers
-  // auth: persistReducer(authPersistConfig, authReducer),
+  auth: persistReducer(authPersistConfig, authReducer),
   // API reducers (RTK Query)
   // [ottApi.reducerPath]: ottApi.reducer,
 });

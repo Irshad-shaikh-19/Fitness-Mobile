@@ -1,12 +1,13 @@
 import { Outlet } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Play, Zap, Trophy, Users, Star } from "lucide-react";
 import Footer from "@/components/Footer";
 import LandingNav from "@/components/LandingNav";
 import { Navbar } from "@/components";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export function LandingLayout() {
+  const user = useSelector((state: any) => state.auth.user);
+
   useEffect(() => {
     const handleBodyScroll = (isOpen: boolean) => {
       if (isOpen) {
@@ -38,8 +39,9 @@ export function LandingLayout() {
 
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white">
-      <Navbar />
-      <LandingNav />
+      {/* Conditional Navbar Rendering */}
+      {user ? <Navbar /> : <LandingNav />}
+
       <main className="pt-16">
         <Outlet />
       </main>

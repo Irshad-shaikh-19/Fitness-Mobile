@@ -3,9 +3,14 @@ import React from "react";
 // Lazy loaded pages
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const HomePage = React.lazy(() => import("./pages/HomePage"));
-const LoginPage = React.lazy(() => import("./pages/LoginPage"));
-const RegisterPage = React.lazy(() => import("./pages/RegisterPage"));
-const VerifyOtpPage = React.lazy(() => import("./pages/VerifyOtpPage"));
+
+const LoginPage = React.lazy(() => import("./frontendPages/auth/LoginPage"));
+const RegisterPage = React.lazy(
+  () => import("./frontendPages/auth/RegisterPage")
+);
+const VerifyOtpPage = React.lazy(
+  () => import("./frontendPages/auth/VerifyOtpPage")
+);
 const CompleteProfilePage = React.lazy(
   () => import("./pages/CompleteProfilePage")
 );
@@ -36,14 +41,33 @@ import { CookiePreferencesPage } from "./pages/CookiePreferencesPage";
 import { CorporateInfoPage } from "./pages/CorporateInfoPage";
 import { LegalNoticesPage } from "./pages/LegalNoticesPage";
 import { SpeedTestPage } from "./pages/SpeedTestPage";
-const routes = [
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+
+// Route type definition
+export interface RouteConfig {
+  path: string;
+  element:
+    | React.LazyExoticComponent<React.ComponentType<any>>
+    | React.ComponentType<any>;
+}
+
+// Public routes - Only accessible when NOT logged in
+// Users will be redirected to /home if already authenticated
+export const publicRoutes: RouteConfig[] = [
   { path: "/", element: LandingPage },
-  { path: "/home", element: HomePage },
   { path: "/login", element: LoginPage },
   { path: "/register", element: RegisterPage },
   { path: "/verify-otp", element: VerifyOtpPage },
+  { path: "/forgot-password", element: ForgotPasswordPage },
+  { path: "/reset-password", element: ResetPasswordPage },
+];
+
+// Private routes - Only accessible when logged in
+// Users will be redirected to /login if not authenticated
+export const privateRoutes: RouteConfig[] = [
+  { path: "/home", element: HomePage },
   { path: "/complete-profile", element: CompleteProfilePage },
-  { path: "/pricing", element: PricingPage },
   { path: "/subscribe", element: SubscribePage },
   { path: "/account", element: AccountPage },
   { path: "/watch/:id", element: WatchPage },
@@ -51,8 +75,11 @@ const routes = [
   { path: "/search", element: SearchPage },
   { path: "/my-list", element: MyListPage },
   { path: "/category/:id", element: CategoryPage },
+];
 
-  // Footer / Static
+// Common routes - Accessible by everyone (both authenticated and non-authenticated)
+export const commonRoutes: RouteConfig[] = [
+  { path: "/pricing", element: PricingPage },
   { path: "/about", element: AboutPage },
   { path: "/faq", element: FAQPage },
   { path: "/help-centre", element: HelpCentrePage },
@@ -68,5 +95,8 @@ const routes = [
   { path: "/legal", element: LegalNoticesPage },
   { path: "/speed-test", element: SpeedTestPage },
 ];
+
+// Export all routes combined (for reference)
+const routes = [...publicRoutes, ...privateRoutes, ...commonRoutes];
 
 export default routes;

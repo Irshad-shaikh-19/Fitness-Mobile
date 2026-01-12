@@ -1,16 +1,27 @@
 import { Play, Zap, Trophy, Users, Star, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom"; // Add this import
 
 export default function LandingPage() {
+  const navigate = useNavigate(); // Initialize navigation
+
+  // Function to handle navigation to login
+  const handleGetStarted = () => {
+    navigate("/login");
+  };
+
+  // Function to handle navigation to pricing
+  const handleViewPlans = () => {
+    navigate("/pricing");
+  };
+
+  // Function to handle start free trial
+  const handleStartFreeTrial = () => {
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white">
-      {/* <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-[#0D0F14]/95 backdrop-blur-sm fixed w-full z-50 border-b border-gray-800">
-        <div className="text-2xl font-bold text-[#F97316]">FITNESSFLICKS.COM</div>
-        <Button variant="outline" className="border-[#F97316] text-[#F97316] hover:bg-[#F97316] hover:text-black">
-          Sign In
-        </Button>
-      </nav> */}
-
       <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#F97316]/20 via-transparent to-[#0D0F14]"></div>
         <div className="absolute inset-0 bg-gray-800 opacity-20"></div>
@@ -28,14 +39,16 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-[#F97316] hover:bg-[#F97316]/90 text-black font-bold px-8 py-6 text-lg"
+              className="bg-[#F97316] hover:bg-[#F97316]/90 text-black font-bold px-8 py-6 text-lg cursor-pointer"
+              onClick={handleGetStarted} // Add onClick handler
             >
               Get Started <ChevronRight className="ml-2" />
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="border-white/30 hover:bg-white/10 px-8 py-6 text-lg"
+              className="border-white/30 hover:bg-white/10 px-8 py-6 text-lg cursor-pointer"
+              onClick={handleViewPlans} // Add onClick handler
             >
               View Plans
             </Button>
@@ -141,7 +154,8 @@ export default function LandingPage() {
           </p>
           <Button
             size="lg"
-            className="bg-[#F97316] hover:bg-[#F97316]/90 text-black font-bold px-12 py-6 text-lg"
+            className="bg-[#F97316] hover:bg-[#F97316]/90 text-black font-bold px-12 py-6 text-lg cursor-pointer"
+            onClick={handleStartFreeTrial} // Add onClick handler
           >
             Start Free Trial
           </Button>
