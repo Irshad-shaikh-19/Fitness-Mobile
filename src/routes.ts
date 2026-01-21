@@ -1,7 +1,8 @@
 import React from "react";
 
 // Lazy loaded pages
-const LandingPage = React.lazy(() => import("./pages/LandingPage"));
+// const LandingPage = React.lazy(() => import("./pages/LandingPage"));
+const LandingPage = React.lazy(() => import("./frontendPages/landingPage"));
 const HomePage = React.lazy(() => import("./pages/HomePage"));
 
 const LoginPage = React.lazy(() => import("./frontendPages/auth/LoginPage"));
@@ -26,16 +27,16 @@ const MyListPage = React.lazy(() => import("./pages/MyListPage"));
 const CategoryPage = React.lazy(() => import("./pages/CategoryPage"));
 
 // Static pages
-const AboutPage = React.lazy(() => import("./pages/AboutPage"));
+// const AboutPage = React.lazy(() => import("./pages/AboutPage"));
 const FAQPage = React.lazy(() => import("./pages/FAQPage"));
 const HelpCentrePage = React.lazy(() => import("./pages/HelpCentrePage"));
 const ContactPage = React.lazy(() => import("./pages/ContactPage"));
 const TermsPage = React.lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = React.lazy(() => import("./pages/PrivacyPage"));
 
-import { JobsPage } from "./pages/JobPage";
-import { MediaCentrePage } from "./pages/MediaCentrePage";
-import { InvestorRelationsPage } from "./pages/InvestorRelationsPage";
+// import { JobsPage } from "./pages/JobPage";
+// import { MediaCentrePage } from "./pages/MediaCentrePage";
+// import { InvestorRelationsPage } from "./pages/InvestorRelationsPage";
 import { WaysToWatchPage } from "./pages/WaysToWatchPage";
 import { CookiePreferencesPage } from "./pages/CookiePreferencesPage";
 import { CorporateInfoPage } from "./pages/CorporateInfoPage";
@@ -43,7 +44,15 @@ import { LegalNoticesPage } from "./pages/LegalNoticesPage";
 import { SpeedTestPage } from "./pages/SpeedTestPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import { JobsPage } from "./frontendPages/footerCompanyPages/JobPage";
+import { MediaCentrePage } from "./frontendPages/footerCompanyPages/MediaCentrePage";
+import { InvestorRelationsPage } from "./frontendPages/footerCompanyPages/InvestorRelationsPage";
 
+const AboutPage = React.lazy(
+  () => import("./frontendPages/footerCompanyPages/AboutPage")
+);
+
+//
 // Route type definition
 export interface RouteConfig {
   path: string;
