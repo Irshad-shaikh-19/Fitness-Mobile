@@ -42,9 +42,14 @@ export function LandingLayout() {
       {/* Conditional Navbar Rendering */}
       {user ? <Navbar /> : <LandingNav />}
 
-      <main className="pt-16">
-        <Outlet />
-      </main>
+    <main
+  className={`pt-16 ${
+    user ? "pb-[72px] md:pb-0" : "pb-0"
+  }`}
+>
+  <Outlet />
+</main>
+
       <Footer />
     </div>
   );

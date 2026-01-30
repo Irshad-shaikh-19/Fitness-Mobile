@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { fetcher, fetcherPost } from "../../utils/axios";
+import { fetcher, fetcherPost, fetcherUpdate } from "../../utils/axios";
 import { setUser, clearUser } from "../slice/authSlice";
 import { Dispatch } from "redux";
 import { persistor } from "../store";
@@ -127,26 +127,6 @@ export const loginUser =
     try {
       const res: any = await fetcherPost(["/user/login", formData]);
 
-      if (!res?.success) {
-        // Check if user needs email verification
-        if (res?.error?.requiresVerification) {
-          // Return verification data for redirect
-          return {
-            requiresVerification: true,
-            tempToken: res.error.tempToken,
-            email: res.error.email,
-            name: res.error.name,
-          };
-        }
-
-        Swal.fire({
-          icon: "error",
-          title: "Login Failed",
-          text: res?.message || "Invalid email or password",
-        });
-        return null;
-      }
-
       const { token, user } = res.data;
 
       localStorage.setItem("fitnessFlicksToken", token);
@@ -155,34 +135,36 @@ export const loginUser =
       Swal.fire({
         icon: "success",
         title: "Login Successful!",
-        text: "Welcome back to FitnessFlicks!",
         timer: 1500,
         showConfirmButton: false,
       });
 
-      return res.data;
+      return { success: true };
     } catch (error: any) {
-      // Handle axios error response for verification required
-      if (error?.response?.data?.error?.requiresVerification) {
-        const errorData = error.response.data.error;
+      const err = error?.response?.data;
+
+      // ✅ OTP CASE
+      if (err?.error?.requiresVerification) {
         return {
+          success: false,
           requiresVerification: true,
-          tempToken: errorData.tempToken,
-          email: errorData.email,
-          name: errorData.name,
+          tempToken: err.error.tempToken,
+          email: err.error.email,
+          name: err.error.name,
         };
       }
 
+      // ❌ WRONG PASSWORD / OTHER ERRORS
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text:
-          error?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        title: "Login Failed",
+        text: err?.message || "Invalid email or password",
       });
-      return null;
+
+      return { success: false };
     }
   };
+
 // GET USER PROFILE
 export const getUserProfile =
   () =>
@@ -223,6 +205,105 @@ export const logoutUser =
       return true;
     } catch (error: any) {
       console.error("Logout error:", error);
+      return false;
+    }
+  };
+
+
+
+
+
+  // UPDATE USER PROFILE
+export const updateUserProfile =
+  (profileData: {
+    name?: string;
+    email?: string;
+    mobile?: string;
+    profile_name?: string;
+  }) =>
+  async (dispatch: Dispatch<any>): Promise<any> => {
+    try {
+      const res: any = await fetcherUpdate([
+        "/user/profile",
+        profileData,
+      ]);
+
+      if (!res?.success) {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res?.message || "Profile update failed",
+        });
+        return null;
+      }
+
+      // Update redux user state
+      dispatch(setUser(res.data.user));
+
+      Swal.fire({
+        icon: "success",
+        title: "Profile Updated",
+        text: "Your profile has been updated successfully",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      return res.data;
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      });
+      return null;
+    }
+  };
+
+
+
+
+  // CHANGE PASSWORD
+export const changePassword =
+  (passwordData: {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) =>
+  async (): Promise<boolean> => {
+    try {
+      const res: any = await fetcherPost([
+        "/auth/change-password",
+        passwordData,
+      ]);
+
+      if (!res?.success) {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: res?.message || "Failed to change password",
+        });
+        return false;
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Password Updated",
+        text: "Your password has been changed successfully.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      return true;
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      });
       return false;
     }
   };

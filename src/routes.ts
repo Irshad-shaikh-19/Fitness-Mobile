@@ -29,10 +29,11 @@ const CategoryPage = React.lazy(() => import("./pages/CategoryPage"));
 // Static pages
 // const AboutPage = React.lazy(() => import("./pages/AboutPage"));
 const FAQPage = React.lazy(() => import("./pages/FAQPage"));
-const HelpCentrePage = React.lazy(() => import("./pages/HelpCentrePage"));
+const HelpCentrePage = React.lazy(() => import("./frontendPages/footerSupportPages/HelpCentrePage"));
 const ContactPage = React.lazy(() => import("./pages/ContactPage"));
 const TermsPage = React.lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = React.lazy(() => import("./pages/PrivacyPage"));
+const WorkoutPlayerPage = React.lazy(() => import("./pages/WorkoutPlayerPage"));
 
 // import { JobsPage } from "./pages/JobPage";
 // import { MediaCentrePage } from "./pages/MediaCentrePage";
@@ -47,6 +48,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { JobsPage } from "./frontendPages/footerCompanyPages/JobPage";
 import { MediaCentrePage } from "./frontendPages/footerCompanyPages/MediaCentrePage";
 import { InvestorRelationsPage } from "./frontendPages/footerCompanyPages/InvestorRelationsPage";
+
 
 const AboutPage = React.lazy(
   () => import("./frontendPages/footerCompanyPages/AboutPage")
@@ -84,6 +86,7 @@ export const privateRoutes: RouteConfig[] = [
   { path: "/search", element: SearchPage },
   { path: "/my-list", element: MyListPage },
   { path: "/category/:id", element: CategoryPage },
+  {path:"/workout/:id", element:WorkoutPlayerPage},
 ];
 
 // Common routes - Accessible by everyone (both authenticated and non-authenticated)

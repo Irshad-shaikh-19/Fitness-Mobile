@@ -34,23 +34,24 @@ const LoginPage = () => {
 
       try {
         const res = await dispatch(loginUser(values));
+if (!res) return;
 
-        if (res) {
-          if (res.requiresVerification) {
-            // Redirect to OTP verification page (same page as registration OTP)
-            navigate("/verify-otp", {
-              state: {
-                email: res.email || values.email,
-                name: res.name,
-                tempToken: res.tempToken,
-                fromLogin: true, // Flag to indicate coming from login
-              },
-            });
-          } else {
-            // Login successful, redirect to dashboard
-            navigate("/dashboard");
-          }
-        }
+if (res.requiresVerification) {
+  navigate("/verify-otp", {
+    state: {
+      email: res.email || values.email,
+      name: res.name,
+      tempToken: res.tempToken,
+      fromLogin: true,
+    },
+  });
+  return;
+}
+
+if (res.success) {
+  navigate("/dashboard");
+}
+
       } catch (error) {
         console.error("Login error:", error);
       } finally {
@@ -61,7 +62,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white flex flex-col">
-      <main className="flex-1 flex items-center justify-center px-6">
+      <main className="flex-1 flex items-center justify-center px-6 py-5">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-[#F97316] mb-2">

@@ -5,6 +5,7 @@ import storage from "redux-persist/lib/storage";
 import authReducer from "./slice/authSlice";
 import { landingPageApi } from "./api/pages/landingPageApi";
 import { footerApi } from "./api/pages/footerApi";
+import { footerSupportApi } from "./api/pages/footerSupportApi";
 
 const authPersistConfig = {
   key: "auth",
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   [landingPageApi.reducerPath]: landingPageApi.reducer,
   [footerApi.reducerPath]: footerApi.reducer,
+  [footerSupportApi.reducerPath]: footerSupportApi.reducer,
 });
 
 export const store = configureStore({
@@ -28,7 +30,8 @@ export const store = configureStore({
       },
     })
       .concat(landingPageApi.middleware)
-      .concat(footerApi.middleware),
+      .concat(footerApi.middleware)
+      .concat(footerSupportApi.middleware),
 });
 
 export const persistor = persistStore(store);

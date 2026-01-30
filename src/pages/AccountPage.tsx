@@ -7,7 +7,6 @@ import {
   Plus,
   Trash2,
   Check,
-  ArrowLeft,
   Phone,
   Shield,
   FileText,
@@ -17,9 +16,113 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserProfile, updateUserProfile,changePassword } from "@/store/api/authApi";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+
+
 
 export default function AccountPage() {
-  const user = {
+
+  const dispatch = useDispatch<any>();
+const user = useSelector((state: any) => state.auth.user);
+const navigate = useNavigate();
+
+
+// local state for form
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [mobile, setMobile] = useState("");
+const [profileName, setProfileName] = useState("");
+
+const [showOld, setShowOld] = useState(false);
+const [showNew, setShowNew] = useState(false);
+const [showConfirm, setShowConfirm] = useState(false);
+
+
+
+
+
+useEffect(() => {
+  dispatch(getUserProfile());
+}, [dispatch]);
+
+useEffect(() => {
+  if (user) {
+    setName(user.name || "");
+    setEmail(user.email || "");
+    setMobile(user.mobile || "");
+    setProfileName(user.profile_name || "");
+  }
+}, [user]);
+
+
+const passwordValidationSchema = Yup.object({
+  oldPassword: Yup.string().required("Current password is required"),
+
+  newPassword: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .matches(
+      /[!@#$%^&*(),.?":{}|<>]/,
+      "Password must contain at least one special character"
+    )
+    .required("New password is required"),
+
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword")], "Passwords must match")
+    .required("Confirm password is required"),
+});
+
+
+
+const passwordFormik = useFormik({
+  initialValues: {
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  },
+  validationSchema: passwordValidationSchema,
+  onSubmit: (values, { resetForm }) => {
+    dispatch(
+      changePassword({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
+      })
+    ).then((success: boolean) => {
+      if (success) resetForm();
+    });
+  },
+});
+
+
+
+const handleUpdateProfile = () => {
+  dispatch(
+    updateUserProfile({
+      name,
+      email,
+      mobile,
+      profile_name: profileName,
+    })
+  );
+};
+
+
+
+
+
+
+
+
+  const Dummyuser = {
     firstName: "Chetan",
     lastName: "Makwana",
     email: "dreamstech123@gmail.com",
@@ -62,168 +165,262 @@ export default function AccountPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0D0F14] text-white">
-      {/* <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-[#0D0F14]/95 backdrop-blur-sm border-b border-gray-800">
-        <span className="text-2xl font-bold text-[#F97316]">FITNESSFLICKS</span>
-        <Button variant="ghost" className="text-gray-300 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
-        </Button>
-      </nav> */}
-
-      <main className="px-6 md:px-12 py-8 max-w-5xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#F97316]/20 flex items-center justify-center">
-            <User className="w-8 h-8 text-[#F97316]" />
+    <div className="min-h-screen bg-[#0D0F14] text-white overflow-x-hidden">
+      <main className="px-4 sm:px-6 md:px-12 py-8 max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8 flex-wrap">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#F97316]/20 flex items-center justify-center shrink-0">
+            <User className="w-7 h-7 sm:w-8 sm:h-8 text-[#F97316]" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">
-              {user.firstName} {user.lastName}
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold truncate">
+              {Dummyuser.firstName} {Dummyuser.lastName}
             </h1>
-            <p className="text-gray-400">{user.email}</p>
+            <p className="text-gray-400 truncate">{Dummyuser.email}</p>
           </div>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="bg-gray-900 border border-gray-800 p-1">
-            <TabsTrigger
-              value="profile"
-              className="data-[state=active]:bg-[#F97316] data-[state=active]:text-black"
-            >
-              <User className="w-4 h-4 mr-2" /> Profile
-            </TabsTrigger>
-            <TabsTrigger
-              value="security"
-              className="data-[state=active]:bg-[#F97316] data-[state=active]:text-black"
-            >
-              <Lock className="w-4 h-4 mr-2" /> Security
-            </TabsTrigger>
-            <TabsTrigger
-              value="notifications"
-              className="data-[state=active]:bg-[#F97316] data-[state=active]:text-black"
-            >
-              <Bell className="w-4 h-4 mr-2" /> Notifications
-            </TabsTrigger>
-            <TabsTrigger
-              value="billing"
-              className="data-[state=active]:bg-[#F97316] data-[state=active]:text-black"
-            >
-              <CreditCard className="w-4 h-4 mr-2" /> Billing
-            </TabsTrigger>
-          </TabsList>
+          {/* Tabs Header */}
+        <div
+  className="overflow-x-auto"
+  style={{
+    scrollbarWidth: "none",    
+    msOverflowStyle: "none",    
+  }}
+>
+  <TabsList className="bg-gray-900 border border-gray-800 p-1 w-max  flex-nowrap">
+    {[
+      { value: "profile", icon: User, label: "Profile" },
+      { value: "security", icon: Lock, label: "Security" },
+      { value: "notifications", icon: Bell, label: "Notifications" },
+      { value: "billing", icon: CreditCard, label: "Billing" },
+    ].map(({ value, icon: Icon, label }) => (
+      <TabsTrigger
+        key={value}
+        value={value}
+        className="data-[state=active]:bg-[#F97316] data-[state=active]:text-black whitespace-nowrap"
+      >
+        <Icon className="w-4 h-4 mr-2" />
+        {label}
+      </TabsTrigger>
+    ))}
+  </TabsList>
+</div>
 
-          <TabsContent value="profile" className="space-y-6">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-xl font-bold mb-6">Personal Information</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    First Name
-                  </label>
-                  <Input
-                    defaultValue={user.firstName}
-                    className="bg-gray-800 border-gray-700"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    Last Name
-                  </label>
-                  <Input
-                    defaultValue={user.lastName}
-                    className="bg-gray-800 border-gray-700"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    Email
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-500" />
-                    <Input
-                      defaultValue={user.email}
-                      className="bg-gray-800 border-gray-700"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    Phone
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                    <Input
-                      defaultValue={user.phone}
-                      className="bg-gray-800 border-gray-700"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-xl font-bold mb-4">Subscription</h2>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-medium capitalize">
-                      {user.subscriptionPlan} Plan
-                    </span>
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400">
-                      {user.subscriptionStatus}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Renews on{" "}
-                    {new Date(user.subscriptionExpiresAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <Button className="bg-[#F97316] hover:bg-[#F97316]/90 text-black">
-                  Change Plan
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
+          {/* PROFILE */}
+         <TabsContent value="profile" className="space-y-6">
+  {/* Personal Information */}
+  <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+    <h2 className="text-xl font-bold mb-6">Personal Information</h2>
 
-          <TabsContent value="security" className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Name */}
+      <div>
+        <label className="block text-sm text-gray-400 mb-2">
+          Name
+        </label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="bg-gray-800 border-gray-700"
+        />
+      </div>
+
+      {/* Profile Name */}
+      <div>
+        <label className="block text-sm text-gray-400 mb-2">
+          Profile Name
+        </label>
+        <Input
+          value={profileName}
+          onChange={(e) => setProfileName(e.target.value)}
+          className="bg-gray-800 border-gray-700"
+        />
+      </div>
+
+      {/* Email */}
+      <div>
+        <label className="block text-sm text-gray-400 mb-2">
+          Email
+        </label>
+        <div className="flex items-center gap-2">
+          <Mail className="w-4 h-4 text-gray-500 shrink-0" />
+          <Input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-gray-800 border-gray-700"
+          />
+        </div>
+      </div>
+
+      {/* Phone */}
+      <div>
+        <label className="block text-sm text-gray-400 mb-2">
+          Phone
+        </label>
+        <div className="flex items-center gap-2">
+          <Phone className="w-4 h-4 text-gray-500 shrink-0" />
+          <Input
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            className="bg-gray-800 border-gray-700"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Update Button */}
+<div className="flex justify-center mt-6">
+  <Button
+    onClick={handleUpdateProfile}
+    className="bg-[#F97316] hover:bg-[#F97316]/90 text-black w-48"
+  >
+    Update Profile
+  </Button>
+</div>
+
+  </div>
+
+  {/* Subscription (UNCHANGED) */}
+  <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+    <h2 className="text-xl font-bold mb-4">Subscription</h2>
+
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-lg font-medium capitalize">
+            {Dummyuser.subscriptionPlan} Plan
+          </span>
+          <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400">
+            {Dummyuser.subscriptionStatus}
+          </span>
+        </div>
+        <p className="text-sm text-gray-400 mt-1">
+          Renews on{" "}
+          {new Date(Dummyuser.subscriptionExpiresAt).toLocaleDateString()}
+        </p>
+      </div>
+
+ <div className="flex justify-center mt-2">
+       <Button
+         onClick={() => navigate("/pricing")}
+    className="bg-[#F97316] hover:bg-[#F97316]/90 text-black w-48"
+  >
+    Change Plan
+  </Button>
+ </div>
+    </div>
+  </div>
+</TabsContent>
+
+
+         <TabsContent value="security" className="space-y-6">
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#F97316]" /> Change Password
               </h2>
-              <form className="space-y-4 max-w-md">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    Current Password
-                  </label>
-                  <Input
-                    type="password"
-                    className="bg-gray-800 border-gray-700"
-                    placeholder="Enter current password"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    New Password
-                  </label>
-                  <Input
-                    type="password"
-                    className="bg-gray-800 border-gray-700"
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    Confirm New Password
-                  </label>
-                  <Input
-                    type="password"
-                    className="bg-gray-800 border-gray-700"
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <Button className="bg-[#F97316] hover:bg-[#F97316]/90 text-black">
-                  Update Password
-                </Button>
-              </form>
+   <form
+  className="space-y-4 max-w-md"
+  onSubmit={passwordFormik.handleSubmit}
+>
+  {/* CURRENT PASSWORD */}
+  <div>
+    <label className="block text-sm text-gray-400 mb-2">
+      Current Password
+    </label>
+    <div className="relative">
+      <Input
+        type={showOld ? "text" : "password"}
+        name="oldPassword"
+        value={passwordFormik.values.oldPassword}
+        onChange={passwordFormik.handleChange}
+        className="bg-gray-800 border-gray-700 pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setShowOld(!showOld)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+      >
+        {showOld ? <Eye size={18} /> : <EyeOff size={18} />}
+      </button>
+    </div>
+    {passwordFormik.touched.oldPassword &&
+      passwordFormik.errors.oldPassword && (
+        <p className="text-red-400 text-sm mt-1">
+          {passwordFormik.errors.oldPassword}
+        </p>
+      )}
+  </div>
+
+  {/* NEW PASSWORD */}
+  <div>
+    <label className="block text-sm text-gray-400 mb-2">
+      New Password
+    </label>
+    <div className="relative">
+      <Input
+        type={showNew ? "text" : "password"}
+        name="newPassword"
+        value={passwordFormik.values.newPassword}
+        onChange={passwordFormik.handleChange}
+        className="bg-gray-800 border-gray-700 pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setShowNew(!showNew)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+      >
+        {showNew ? <Eye size={18} /> : <EyeOff size={18} />}
+      </button>
+    </div>
+    {passwordFormik.touched.newPassword &&
+      passwordFormik.errors.newPassword && (
+        <p className="text-red-400 text-sm mt-1">
+          {passwordFormik.errors.newPassword}
+        </p>
+      )}
+  </div>
+
+  {/* CONFIRM PASSWORD */}
+  <div>
+    <label className="block text-sm text-gray-400 mb-2">
+      Confirm New Password
+    </label>
+    <div className="relative">
+      <Input
+        type={showConfirm ? "text" : "password"}
+        name="confirmPassword"
+        value={passwordFormik.values.confirmPassword}
+        onChange={passwordFormik.handleChange}
+        className="bg-gray-800 border-gray-700 pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setShowConfirm(!showConfirm)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+      >
+        {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
+      </button>
+    </div>
+    {passwordFormik.touched.confirmPassword &&
+      passwordFormik.errors.confirmPassword && (
+        <p className="text-red-400 text-sm mt-1">
+          {passwordFormik.errors.confirmPassword}
+        </p>
+      )}
+  </div>
+
+  <Button
+    type="submit"
+    className="bg-[#F97316] hover:bg-[#F97316]/90 text-black"
+  >
+    Update Password
+  </Button>
+</form>
+
+
             </div>
           </TabsContent>
 
@@ -262,19 +459,20 @@ export default function AccountPage() {
             </div>
           </TabsContent>
 
+          {/* BILLING */}
           <TabsContent value="billing" className="space-y-6">
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold">Payment Methods</h2>
                 <Button
                   size="sm"
                   className="bg-[#F97316] hover:bg-[#F97316]/90 text-black"
                 >
-                  <Plus className="w-4 h-4 mr-1" /> Add Method
+                  <Plus className="w-4 h-4 mr-1" /> Add
                 </Button>
               </div>
-              <div className="space-y-3">
-                {paymentMethods.map((method) => (
+
+             {paymentMethods.map((method) => (
                   <div
                     key={method.id}
                     className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg"
@@ -299,15 +497,16 @@ export default function AccountPage() {
                     </Button>
                   </div>
                 ))}
-              </div>
             </div>
 
+            {/* Payment History */}
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#F97316]" /> Payment History
               </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+
+              <div className="overflow-x-auto scrollbar-hide">
+                <table className="min-w-[700px] w-full">
                   <thead>
                     <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
                       <th className="pb-3">Date</th>
@@ -317,32 +516,17 @@ export default function AccountPage() {
                       <th className="pb-3">Invoice</th>
                     </tr>
                   </thead>
-                  <tbody className="text-sm">
+                  <tbody>
                     {transactions.map((txn) => (
                       <tr key={txn.id} className="border-b border-gray-800/50">
                         <td className="py-4">
                           {new Date(txn.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="py-4">
-                          <p className="font-medium">{txn.description}</p>
-                          <p className="text-gray-400 text-xs">
-                            {txn.cardBrand} •••• {txn.cardLast4}
-                          </p>
-                        </td>
+                        <td className="py-4">{txn.description}</td>
                         <td className="py-4">${txn.amount}</td>
+                        <td className="py-4 text-green-400">Paid</td>
                         <td className="py-4">
-                          <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400 flex items-center gap-1 w-fit">
-                            <Check className="w-3 h-3" /> Paid
-                          </span>
-                        </td>
-                        <td className="py-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#F97316] hover:text-[#F97316]/80"
-                          >
-                            <Download className="w-4 h-4 mr-1" /> PDF
-                          </Button>
+                          <Download className="w-4 h-4 text-[#F97316]" />
                         </td>
                       </tr>
                     ))}
