@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search as SearchIcon, X, Play, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 const mockWorkouts = [
   {
@@ -45,6 +46,7 @@ const mockWorkouts = [
 const mockCategories = ["All", "Cardio", "Strength", "Yoga", "Core"];
 
 export default function SearchPage() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -64,6 +66,10 @@ export default function SearchPage() {
   });
 
   const isSearching = query.length > 0 || selectedCategory !== "All";
+
+  const handleWorkoutClick = (workoutId: number) => {
+    navigate(`/workout/${workoutId}`);
+  };
 
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white pb-24 pt-6">
@@ -140,7 +146,11 @@ export default function SearchPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {filteredWorkouts.map((workout) => (
-                <div key={workout.id} className="group cursor-pointer">
+                <div 
+                  key={workout.id} 
+                  className="group cursor-pointer"
+                  onClick={() => handleWorkoutClick(workout.id)}
+                >
                   <div className="relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300 active:scale-95 sm:group-hover:scale-105 sm:group-hover:shadow-2xl">
                     {/* Thumbnail */}
                     <div className="aspect-video relative overflow-hidden">

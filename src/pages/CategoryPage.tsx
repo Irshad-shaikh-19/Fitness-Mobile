@@ -2,6 +2,7 @@ import { Navbar } from "@/components/navbar";
 import { WorkoutCard } from "@/components/workout-card";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const mockWorkouts = [
   {
@@ -63,7 +64,12 @@ const mockWorkouts = [
 ];
 
 export default function CategoryPage() {
+  const navigate = useNavigate();
   const categoryName = "Cardio";
+
+  const handleWorkoutClick = (workoutId: number) => {
+    navigate(`/workout/${workoutId}`);
+  };
 
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white pb-20">
@@ -73,6 +79,7 @@ export default function CategoryPage() {
         <Button
           variant="ghost"
           className="text-white hover:bg-white/10 gap-2 mb-4"
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Home
@@ -87,7 +94,11 @@ export default function CategoryPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {mockWorkouts.map((workout) => (
-            <div key={workout.id} className="group cursor-pointer">
+            <div 
+              key={workout.id} 
+              className="group cursor-pointer"
+              onClick={() => handleWorkoutClick(workout.id)}
+            >
               <div className="relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300 
                 active:scale-95 sm:group-hover:scale-105 sm:group-hover:shadow-2xl sm:group-hover:z-10">
                 

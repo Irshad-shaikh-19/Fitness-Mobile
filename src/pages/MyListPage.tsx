@@ -1,5 +1,6 @@
 import { ArrowLeft, Play, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 // import { Navbar } from "@/components/navbar";
 
 const mockSavedWorkouts = [
@@ -42,8 +43,14 @@ const mockSavedWorkouts = [
 ];
 
 export default function MyListPage() {
+  const navigate = useNavigate();
+
   const handleDelete = (id: string) => {
     console.log("Delete saved workout:", id);
+  };
+
+  const handleWorkoutClick = (workoutId: number) => {
+    navigate(`/workout/${workoutId}`);
   };
 
   return (
@@ -57,6 +64,7 @@ export default function MyListPage() {
             variant="ghost"
             size="icon"
             className="text-gray-400 hover:text-white"
+            onClick={() => navigate(-1)}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -72,7 +80,11 @@ export default function MyListPage() {
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {mockSavedWorkouts.map((saved) => (
-            <div key={saved.id} className="group cursor-pointer relative">
+            <div 
+              key={saved.id} 
+              className="group cursor-pointer relative"
+              onClick={() => handleWorkoutClick(saved.workoutId)}
+            >
               <div
                 className="relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300
                 active:scale-95 sm:group-hover:scale-105 sm:group-hover:shadow-2xl sm:group-hover:z-10"
