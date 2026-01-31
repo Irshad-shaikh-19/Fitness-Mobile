@@ -212,12 +212,13 @@ export default function WorkoutPlayerPage() {
           className="relative w-full aspect-video md:h-[70vh] lg:h-[80vh] bg-black"
           onMouseMove={() => setShowControls(true)}
           onMouseLeave={() => isPlaying && setShowControls(false)}
-          onClick={(e) => {
-            // Only toggle if clicking on the video container itself, not on controls
-            if (e.target === e.currentTarget || e.target.tagName === 'VIDEO') {
-              handlePlayPause();
-            }
-          }}
+         onClick={(e) => {
+  // Only toggle if clicking on the video container itself, not on controls
+  const target = e.target as HTMLElement;
+  if (target === e.currentTarget || target.tagName === 'VIDEO') {
+    handlePlayPause();
+  }
+}}
         >
           {/* Thumbnail Overlay */}
           {showThumbnail && !isPlaying && (
