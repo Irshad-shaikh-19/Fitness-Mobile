@@ -8,9 +8,9 @@ function index() {
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white">
       <HeroSection />
-      <WhySection />
+      {/* <WhySection />
       <TestimonialSection />
-      <CTASection />
+      <CTASection /> */}
     </div>
   );
 }
