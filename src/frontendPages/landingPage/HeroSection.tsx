@@ -55,11 +55,48 @@ const slides = [
 
 export const HeroSection = () => {
   const [index, setIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
   const navigate = useNavigate();
   const slide = slides[index];
 
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e:any) => {
+    setTouchEnd(0); // Reset touchEnd
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e:any) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && index < slides.length - 1) {
+      // Swipe left - go to next slide
+      setIndex(index + 1);
+    }
+    
+    if (isRightSwipe && index > 0) {
+      // Swipe right - go to previous slide
+      setIndex(index - 1);
+    }
+  };
+
   return (
-    <section className="fixed inset-0 bg-[#0D0F14] flex flex-col pt-20 overflow-hidden">
+    <section 
+      className="fixed inset-0 bg-[#0D0F14] flex flex-col pt-20 overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* First slide - Full background image */}
       {slide.fullBackground && (
         <div 
