@@ -1,8 +1,7 @@
 import { Navbar } from "@/components/navbar";
-import { WorkoutCard } from "@/components/workout-card";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Play, X, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const mockWorkouts = [
   {
@@ -63,6 +62,8 @@ const mockWorkouts = [
   },
 ];
 
+
+
 export default function CategoryPage() {
   const navigate = useNavigate();
   const categoryName = "Cardio";
@@ -72,83 +73,57 @@ export default function CategoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0F14] text-white pb-20">
-      {/* <Navbar /> */}
+    <div className="min-h-screen bg-black text-white pb-20 overflow-x-hidden">
+      <Navbar />
 
-      <div className="pt-4 px-4 md:px-12">
-        <Button
-          variant="ghost"
-          className="text-white hover:bg-white/10 gap-2 mb-4"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Home
-        </Button>
+   
 
-        <h1 className="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-tight">
-          {categoryName} Workouts
-        </h1>
-        <p className="text-gray-400 mb-6">
-          {mockWorkouts.length} workouts available
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* Content */}
+      <main className="px-4 pt-6">
+        <div className="space-y-4">
           {mockWorkouts.map((workout) => (
-            <div 
-              key={workout.id} 
-              className="group cursor-pointer"
+            <div
+              key={workout.id}
               onClick={() => handleWorkoutClick(workout.id)}
+              className="flex items-center gap-4 cursor-pointer"
             >
-              <div className="relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300 
-                active:scale-95 sm:group-hover:scale-105 sm:group-hover:shadow-2xl sm:group-hover:z-10">
-                
-                {/* Thumbnail */}
-                <div className="aspect-video relative overflow-hidden">
-                  <img
-                    src={workout.thumbnail}
-                    alt={workout.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  
-                  {/* Duration Badge */}
-                  <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded">
-                    <span className="text-xs font-semibold text-white">{workout.duration}</span>
-                  </div>
-                  
-                  {/* Popular Badge */}
-                  {workout.isPopular && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-red-600/90 backdrop-blur-sm rounded">
-                      <span className="text-xs font-semibold text-white">Popular</span>
-                    </div>
-                  )}
+              <div className="w-32 h-20 rounded overflow-hidden bg-gray-800 flex-shrink-0">
+                <img
+                  src={workout.thumbnail}
+                  alt={workout.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white text-base font-medium truncate">
+                  {workout.title}
+                </h3>
+                <div className="flex items-center gap-1.5 text-gray-400 text-sm mt-1">
+                  <span className="font-semibold text-green-400">{workout.category}</span>
+                  <span>•</span>
+                  <span>{workout.duration}</span>
                 </div>
-                
-                {/* Content */}
-                <div className="p-3">
-                  <h3 className="text-white font-bold text-sm mb-1 line-clamp-1">
-                    {workout.title}
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-gray-300 text-xs">
-                    <span className="font-semibold text-green-400">{workout.category}</span>
-                    <span>•</span>
-                    <span>{workout.duration}</span>
-                  </div>
-                </div>
-                
-                {/* Hover Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center backdrop-blur-sm">
-                    <svg className="w-5 h-5 text-black fill-black ml-0.5" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
+              </div>
+
+              {/* Play button */}
+              <div className="flex-shrink-0">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/workout/${workout.id}`);
+                  }}
+                  className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/10 transition"
+                >
+                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                </button>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </main>
+
+    
     </div>
   );
 }

@@ -2,11 +2,17 @@ import { Outlet } from "react-router-dom";
 import Footer from "@/components/Footer";
 import LandingNav from "@/components/LandingNav";
 import { Navbar } from "@/components";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 export function LandingLayout() {
   const user = useSelector((state: any) => state.auth.user);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Add console log to debug
+  useEffect(() => {
+    console.log("Edit Mode in Layout:", isEditMode);
+  }, [isEditMode]);
 
   useEffect(() => {
     const handleBodyScroll = (isOpen: boolean) => {
@@ -17,7 +23,6 @@ export function LandingLayout() {
       }
     };
 
-    // Listen for sidebar state changes
     const checkSidebar = () => {
       const sidebar = document.querySelector(
         '.md\\:hidden [class*="translate-x-0"]'
@@ -25,10 +30,7 @@ export function LandingLayout() {
       handleBodyScroll(!!sidebar);
     };
 
-    // Check on mount
     checkSidebar();
-
-    // Re-check on resize
     window.addEventListener("resize", checkSidebar);
 
     return () => {
@@ -39,16 +41,17 @@ export function LandingLayout() {
 
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white">
-      {/* Conditional Navbar Rendering */}
-      {user ? <Navbar /> : <LandingNav />}
+      {/* Pass edit mode state to Navbar */}
+      {user ? (
+        <Navbar isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
+      ) : (
+        <LandingNav />
+      )}
 
-    <main
-  className={`pt-16 ${
-    user ? "pb-[72px] md:pb-0" : "pb-0"
-  }`}
->
-  <Outlet />
-</main>
+      <main className={`pt-16 ${user ? "pb-[72px] md:pb-0" : "pb-0"}`}>
+        {/* Pass edit mode state to child routes via context */}
+        <Outlet context={{ isEditMode, setIsEditMode }} />
+      </main>
 
       <Footer />
     </div>

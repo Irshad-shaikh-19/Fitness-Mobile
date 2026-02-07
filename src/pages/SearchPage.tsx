@@ -1,205 +1,232 @@
 import { useState } from "react";
-import { Search as SearchIcon, X, Play, Filter, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Search as SearchIcon, X, Play, Mic } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const mockWorkouts = [
+
+
+const mockRecommendedWorkouts = [
   {
     id: 1,
-    title: "30-MIN HIIT BURN",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=400&h=600&fit=crop&q=80",
-    category: "Cardio",
-    duration: "30 min",
-    coach: "Mike T.",
+    title: "Total Body HIIT Burn",
+    thumbnail:
+      "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=400&h=300&fit=crop&q=80",
+    badge: "TOP 10",
   },
   {
     id: 2,
-    title: "Core Blast",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=600&fit=crop&q=80",
-    category: "Core",
-    duration: "15 min",
-    coach: "Sarah M.",
+    title: "Strength & Conditioning",
+    thumbnail:
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=300&fit=crop&q=80",
   },
   {
     id: 3,
-    title: "Morning Yoga Flow",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=400&h=600&fit=crop&q=80",
-    category: "Yoga",
-    duration: "25 min",
-    coach: "Emily R.",
+    title: "Advanced Fat Burn Workout",
+    thumbnail:
+      "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop&q=80",
+    badge: "TOP 10",
+    recentlyAdded: true,
   },
   {
     id: 4,
-    title: "Upper Body Strength",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=600&fit=crop&q=80",
-    category: "Strength",
-    duration: "45 min",
-    coach: "James K.",
+    title: "Morning Yoga Flow",
+    thumbnail:
+      "https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=400&h=300&fit=crop&q=80",
+  },
+  {
+    id: 5,
+    title: "Beginner Cardio Session",
+    thumbnail:
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop&q=80",
   },
 ];
 
-const mockCategories = ["All", "Cardio", "Strength", "Yoga", "Core"];
+
+const mockSearchResults = [
+  {
+    id: 1,
+    title: "30-Min Full Body Burn",
+    thumbnail:
+      "https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 2,
+    title: "HIIT Cardio Blast",
+    thumbnail:
+      "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 3,
+    title: "Strength Training Essentials",
+    thumbnail:
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 4,
+    title: "Beginner Yoga Flow",
+    thumbnail:
+      "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 5,
+    title: "Live Morning Workout",
+    thumbnail:
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=300&h=450&fit=crop&q=80",
+    live: "02/03",
+  },
+  {
+    id: 6,
+    title: "Core & Abs Sculpt",
+    thumbnail:
+      "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 7,
+    title: "Power Yoga Strength",
+    thumbnail:
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 8,
+    title: "Lower Body Strength",
+    thumbnail:
+      "https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=300&h=450&fit=crop&q=80",
+  },
+  {
+    id: 9,
+    title: "Evening Stretch & Recovery",
+    thumbnail:
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=300&h=450&fit=crop&q=80",
+  },
+];
+
 
 export default function SearchPage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-  const filteredWorkouts = mockWorkouts.filter((workout) => {
-    const matchesQuery =
-      !query ||
-      workout.title.toLowerCase().includes(query.toLowerCase()) ||
-      workout.coach.toLowerCase().includes(query.toLowerCase()) ||
-      workout.category.toLowerCase().includes(query.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "All" ||
-      workout.category.toLowerCase() === selectedCategory.toLowerCase();
-
-    return matchesQuery && matchesCategory;
-  });
-
-  const isSearching = query.length > 0 || selectedCategory !== "All";
+  const isSearching = query.length > 0;
 
   const handleWorkoutClick = (workoutId: number) => {
     navigate(`/workout/${workoutId}`);
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0F14] text-white pb-24 pt-6">
-      <main className="px-4 md:px-12 pt-4">
-        {/* Search + Filter Row */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex flex-col md:flex-row gap-3">
-            {/* Search Input */}
-            <div className="relative flex-1">
-              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search workouts, coach, or category..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-14 pl-12 pr-12 bg-gray-900 border-gray-700 text-white text-lg rounded-xl"
-                autoFocus
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-
-            {/* Filter Dropdown Button */}
-            <div className="relative md:w-56">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="w-full h-14 border-gray-700 text-gray-300 justify-between"
+    <div className="min-h-screen bg-black text-white pb-24 pt-20">
+      {/* Search Input */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-gray-800 px-4 py-3">
+        <div className="relative">
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search shows, movies, games..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full h-12 pl-12 pr-20 bg-gray-700 border-none text-white text-base rounded-md focus:outline-none focus:ring-0"
+            autoFocus
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="text-gray-400 hover:text-white"
               >
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4" />
-                  <span>{selectedCategory}</span>
-                </div>
-                <ChevronDown className="w-4 h-4" />
-              </Button>
-
-              {/* Dropdown */}
-              {showFilterDropdown && (
-                <div className="absolute z-20 mt-2 w-full bg-gray-900 border border-gray-800 rounded-xl shadow-xl overflow-hidden">
-                  {mockCategories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setSelectedCategory(cat);
-                        setShowFilterDropdown(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-sm transition-colors ${
-                        selectedCategory === cat
-                          ? "bg-[#F97316] text-black font-semibold"
-                          : "text-gray-300 hover:bg-gray-800"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                <X className="w-5 h-5" />
+              </button>
+            )}
+            {/* <button className="text-gray-400 hover:text-white">
+              <Mic className="w-5 h-5" />
+            </button> */}
           </div>
         </div>
+      </div>
 
-        {/* Results */}
-        {filteredWorkouts.length > 0 ? (
+      <main className="px-4 pt-4">
+        {/* Show Recommendations when not searching */}
+        {!isSearching ? (
           <>
-            <h2 className="text-lg font-bold mb-4">
-              {isSearching ? "Search Results" : "Recent Searches"}
-            </h2>
+          
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {filteredWorkouts.map((workout) => (
-                <div 
-                  key={workout.id} 
-                  className="group cursor-pointer"
-                  onClick={() => handleWorkoutClick(workout.id)}
-                >
-                  <div className="relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300 active:scale-95 sm:group-hover:scale-105 sm:group-hover:shadow-2xl">
+            {/* Recommended Shows & Movies */}
+            <div>
+              <h2 className="text-xl font-bold mb-4">Recommended Workouts</h2>
+              <div className="space-y-3">
+                {mockRecommendedWorkouts.map((workout) => (
+                  <div
+                    key={workout.id}
+                    onClick={() => handleWorkoutClick(workout.id)}
+                    className="flex items-center gap-3 cursor-pointer"
+                  >
                     {/* Thumbnail */}
-                    <div className="aspect-video relative overflow-hidden">
+                    <div className="relative w-32 h-20 flex-shrink-0 rounded overflow-hidden bg-gray-800">
                       <img
-                        src={workout.thumbnailUrl}
+                        src={workout.thumbnail}
                         alt={workout.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 rounded text-xs font-semibold">
-                        {workout.duration}
-                      </div>
+                      {workout.badge && (
+                        <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl">
+                          {workout.badge}
+                        </div>
+                      )}
+                      {workout.recentlyAdded && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-red-600 text-white text-[10px] font-bold px-2 py-1 text-center">
+                          Recently added
+                        </div>
+                      )}
                     </div>
 
-                    {/* Content */}
-                    <div className="p-3">
-                      <h3 className="font-bold text-sm mb-1 line-clamp-1">
+                    {/* Title */}
+                    <div className="flex-1">
+                      <h3 className="text-white text-base font-medium">
                         {workout.title}
                       </h3>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-300">
-                        <span className="font-semibold text-green-400">
-                          {workout.category}
-                        </span>
-                        <span>•</span>
-                        <span>{workout.coach}</span>
-                      </div>
                     </div>
 
-                    {/* Hover Play */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                        <Play className="w-5 h-5 text-black ml-0.5" />
+                    {/* Play Button */}
+                    <button className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center flex-shrink-0">
+                      <Play className="w-5 h-5 text-white fill-white ml-1" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Show Search Results */
+          <>
+            <h2 className="text-xl font-bold mb-4">Movies & TV</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {mockSearchResults.map((result) => (
+                <div
+                  key={result.id}
+                  onClick={() => handleWorkoutClick(result.id)}
+                  className="cursor-pointer"
+                >
+                  <div className="relative aspect-[2/3] rounded overflow-hidden bg-gray-800">
+                    <img
+                      src={result.thumbnail}
+                      alt={result.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {result.live && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-red-600 text-white">
+                        <div className="text-center text-[10px] font-bold py-0.5">Live</div>
+                        <div className="text-center text-xs font-bold py-1">{result.live}</div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </>
-        ) : (
-          <div className="text-center py-20">
-            <SearchIcon className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">No results found</h2>
-            <p className="text-gray-400">
-              Try searching with different keywords or filters
-            </p>
-          </div>
         )}
       </main>
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }

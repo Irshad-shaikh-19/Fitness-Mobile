@@ -1,7 +1,6 @@
-import { ArrowLeft, Play, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-// import { Navbar } from "@/components/navbar";
+import { Play, Trash2, Check, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 const mockSavedWorkouts = [
   {
@@ -9,7 +8,7 @@ const mockSavedWorkouts = [
     workoutId: 1,
     workout: {
       id: 1,
-      title: "30-MIN HIIT BURN",
+      title: "Quick Burn",
       category: "Cardio",
       duration: "30 min",
       thumbnail:
@@ -21,130 +20,216 @@ const mockSavedWorkouts = [
     workoutId: 2,
     workout: {
       id: 2,
-      title: "Core Blast",
+      title: "Upper Body",
       category: "Core",
       duration: "15 min",
       thumbnail:
         "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=600&fit=crop&q=80",
     },
   },
-  {
-    id: "3",
-    workoutId: 3,
-    workout: {
-      id: 3,
-      title: "Morning Yoga Flow",
-      category: "Yoga",
-      duration: "25 min",
-      thumbnail:
-        "https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=400&h=600&fit=crop&q=80",
-    },
-  },
 ];
+
+interface SortMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedSort: string;
+  onSelectSort: (sort: string) => void;
+}
+
+function SortMenu({ isOpen, onClose, selectedSort, onSelectSort }: SortMenuProps) {
+  const sortOptions = [
+    "Suggested",
+    "Date Added to List",
+    "A - Z",
+    "Release Date",
+  ];
+
+  const handleSelect = (option: string) => {
+    onSelectSort(option);
+    onClose();
+  };
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "unset";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+      />
+
+      {/* Bottom Sheet */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 bg-gray-900 rounded-t-2xl z-[60]
+          transition-transform duration-300 ${
+            isOpen ? "translate-y-0" : "translate-y-full"
+          }`}
+      >
+        <div className="px-4 py-6 pb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white text-xl font-semibold">Sort by</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="space-y-0">
+            {sortOptions.map((option) => (
+              <button
+                key={option}
+                onClick={() => handleSelect(option)}
+                className="w-full flex items-center justify-between px-4 py-4
+                  text-white hover:bg-gray-800/50 active:bg-gray-800/70
+                  rounded-lg transition"
+              >
+                <span className="text-lg">{option}</span>
+                {selectedSort === option && (
+                  <Check className="w-6 h-6 text-white" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Define the context type
+interface OutletContextType {
+  isEditMode: boolean;
+  setIsEditMode: (value: boolean) => void;
+}
 
 export default function MyListPage() {
   const navigate = useNavigate();
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [selectedSort, setSelectedSort] = useState("Suggested");
+  
+  // Get edit mode state from outlet context
+  const context = useOutletContext<OutletContextType>();
+  const isEditMode = context?.isEditMode ?? false;
+  const setIsEditMode = context?.setIsEditMode ?? (() => {});
+
+  // Add console log to debug
+  useEffect(() => {
+    console.log("Edit Mode in MyListPage:", isEditMode);
+  }, [isEditMode]);
 
   const handleDelete = (id: string) => {
     console.log("Delete saved workout:", id);
+    // Add your delete logic here
   };
 
   const handleWorkoutClick = (workoutId: number) => {
-    navigate(`/workout/${workoutId}`);
+    if (!isEditMode) {
+      navigate(`/workout/${workoutId}`);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0F14] text-white pb-20">
-      {/* <Navbar /> */}
-
-      <main className="pt-4 px-4 md:px-12">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-400 hover:text-white"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-
-          <div>
-            <h1 className="text-3xl font-bold">My List</h1>
-            <p className="text-gray-400">
-              {mockSavedWorkouts.length} saved workouts
-            </p>
+    <div className="min-h-screen bg-black text-white pb-20 overflow-x-hidden">
+      {/* Sort Header - Only show when NOT in edit mode */}
+      {!isEditMode && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-black">
+          <div className="px-4 py-2 pb-3">
+            <button
+              onClick={() => setIsSortOpen(true)}
+              className="w-full text-left active:bg-gray-800/40 rounded-lg transition"
+            >
+              <span className="text-gray-400 text-sm">Sort by</span>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-white text-base font-medium">
+                  {selectedSort}
+                </span>
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* Content */}
+      <main className={`px-4 ${isEditMode ? 'pt-20' : 'pt-24'}`}>
+        <div className="space-y-4">
           {mockSavedWorkouts.map((saved) => (
-            <div 
-              key={saved.id} 
-              className="group cursor-pointer relative"
+            <div
+              key={saved.id}
               onClick={() => handleWorkoutClick(saved.workoutId)}
+              className={`flex items-center gap-4 ${!isEditMode ? 'cursor-pointer' : ''}`}
             >
-              <div
-                className="relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300
-                active:scale-95 sm:group-hover:scale-105 sm:group-hover:shadow-2xl sm:group-hover:z-10"
-              >
-                {/* Thumbnail */}
-                <div className="aspect-video relative overflow-hidden">
-                  <img
-                    src={saved.workout.thumbnail}
-                    alt={saved.workout.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
+              <div className="w-32 h-20 rounded overflow-hidden bg-gray-800 flex-shrink-0">
+                <img
+                  src={saved.workout.thumbnail}
+                  alt={saved.workout.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-                  {/* Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white text-base font-medium truncate">
+                  {saved.workout.title}
+                </h3>
+              </div>
 
-                  {/* Duration Badge */}
-                  <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded">
-                    <span className="text-xs font-semibold text-white">
-                      {saved.workout.duration}
-                    </span>
-                  </div>
-
-                  {/* Delete Button */}
+              {/* Conditional rendering: Delete button in edit mode, Play button otherwise */}
+              <div className="flex-shrink-0">
+                {isEditMode ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(saved.id);
                     }}
-                    className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-black/70
-                      text-white hover:bg-red-600 transition-colors"
+                    className="text-red-500 hover:text-red-400 transition p-2"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-6 h-6" />
                   </button>
-                </div>
-
-                {/* Content */}
-                <div className="p-3">
-                  <h3 className="text-white font-bold text-sm mb-1 line-clamp-1">
-                    {saved.workout.title}
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-gray-300 text-xs">
-                    <span className="font-semibold text-green-400">
-                      {saved.workout.category}
-                    </span>
-                    <span>•</span>
-                    <span>{saved.workout.duration}</span>
-                  </div>
-                </div>
-
-                {/* Hover Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center backdrop-blur-sm">
-                    <Play className="w-5 h-5 text-black ml-0.5" />
-                  </div>
-                </div>
+                ) : (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/workout/${saved.workoutId}`);
+                    }}
+                    className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/10 transition"
+                  >
+                    <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       </main>
+
+      <SortMenu
+        isOpen={isSortOpen}
+        onClose={() => setIsSortOpen(false)}
+        selectedSort={selectedSort}
+        onSelectSort={setSelectedSort}
+      />
     </div>
   );
 }

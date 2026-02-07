@@ -48,6 +48,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { JobsPage } from "./frontendPages/footerCompanyPages/JobPage";
 import { MediaCentrePage } from "./frontendPages/footerCompanyPages/MediaCentrePage";
 import { InvestorRelationsPage } from "./frontendPages/footerCompanyPages/InvestorRelationsPage";
+import ProfilePage from "./pages/Profilepage";
+import DownloadsPage from "./pages/DownloadsPage";
 
 
 const AboutPage = React.lazy(
@@ -87,6 +89,8 @@ export const privateRoutes: RouteConfig[] = [
   { path: "/my-list", element: MyListPage },
   { path: "/category/:id", element: CategoryPage },
   {path:"/workout/:id", element:WorkoutPlayerPage},
+  {path:"/downloads", element:DownloadsPage}
+
 ];
 
 // Common routes - Accessible by everyone (both authenticated and non-authenticated)
@@ -106,6 +110,7 @@ export const commonRoutes: RouteConfig[] = [
   { path: "/corporate", element: CorporateInfoPage },
   { path: "/legal", element: LegalNoticesPage },
   { path: "/speed-test", element: SpeedTestPage },
+  { path: "/profile", element: ProfilePage },
 ];
 
 // Export all routes combined (for reference)

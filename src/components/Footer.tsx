@@ -1,73 +1,73 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+// import React, { useEffect, useState } from "react";
+// import { Link } from "react-router-dom";
+// import { useSelector } from "react-redux";
 
-function Footer() {
-  const user = useSelector((state: any) => state.auth.user);
-  const isLoggedIn = !!user;
+// function Footer() {
+//   const user = useSelector((state: any) => state.auth.user);
+//   const isLoggedIn = !!user;
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // 👇 Reactively watch body class changes
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsMenuOpen(document.body.classList.contains("menu-open"));
-    });
+//   // 👇 Reactively watch body class changes
+//   useEffect(() => {
+//     const observer = new MutationObserver(() => {
+//       setIsMenuOpen(document.body.classList.contains("menu-open"));
+//     });
 
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
+//     observer.observe(document.body, {
+//       attributes: true,
+//       attributeFilter: ["class"],
+//     });
 
-    // initial check
-    setIsMenuOpen(document.body.classList.contains("menu-open"));
+//     // initial check
+//     setIsMenuOpen(document.body.classList.contains("menu-open"));
 
-    return () => observer.disconnect();
-  }, []);
+//     return () => observer.disconnect();
+//   }, []);
 
-  // 🚫 Hide footer when mobile menu is open
-  if (isLoggedIn && isMenuOpen) return null;
+//   // 🚫 Hide footer when mobile menu is open
+//   if (isLoggedIn && isMenuOpen) return null;
 
-  // 🔹 LOGGED-IN FOOTER (Mobile Bottom Nav)
-  if (isLoggedIn) {
-    return (
-      <footer className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-gray-800 px-4 py-2 z-40 ">
-        <div className="flex items-center justify-around">
-          <Link to="/home" className="flex flex-col items-center gap-1 text-white">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-            <span className="text-xs">Home</span>
-          </Link>
+//   // 🔹 LOGGED-IN FOOTER (Mobile Bottom Nav)
+//   if (isLoggedIn) {
+//     return (
+//       <footer className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-gray-800 px-4 py-2 z-40 ">
+//         <div className="flex items-center justify-around">
+//           <Link to="/home" className="flex flex-col items-center gap-1 text-white">
+//             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+//               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+//             </svg>
+//             <span className="text-xs">Home</span>
+//           </Link>
 
-          <Link to="/pricing" className="flex flex-col items-center gap-1 text-gray-400">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="3" y="3" width="7" height="7" rx="1" strokeWidth="2" />
-              <rect x="14" y="3" width="7" height="7" rx="1" strokeWidth="2" />
-              <rect x="14" y="14" width="7" height="7" rx="1" strokeWidth="2" />
-              <rect x="3" y="14" width="7" height="7" rx="1" strokeWidth="2" />
-            </svg>
-            <span className="text-xs">Plans</span>
-          </Link>
+//           <Link to="/pricing" className="flex flex-col items-center gap-1 text-gray-400">
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//               <rect x="3" y="3" width="7" height="7" rx="1" strokeWidth="2" />
+//               <rect x="14" y="3" width="7" height="7" rx="1" strokeWidth="2" />
+//               <rect x="14" y="14" width="7" height="7" rx="1" strokeWidth="2" />
+//               <rect x="3" y="14" width="7" height="7" rx="1" strokeWidth="2" />
+//             </svg>
+//             <span className="text-xs">Plans</span>
+//           </Link>
 
-          <Link to="/my-list" className="flex flex-col items-center gap-1 text-gray-400">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M19 11H5M19 11V19H5V11M7 7h10v4H7z" strokeWidth="2" />
-            </svg>
-            <span className="text-xs">My List</span>
-          </Link>
+//           <Link to="/my-list" className="flex flex-col items-center gap-1 text-gray-400">
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//               <path d="M19 11H5M19 11V19H5V11M7 7h10v4H7z" strokeWidth="2" />
+//             </svg>
+//             <span className="text-xs">My List</span>
+//           </Link>
 
-          <Link to="/settings" className="flex flex-col items-center gap-1 text-gray-400">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="3" strokeWidth="2" />
-              <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" strokeWidth="2" />
-            </svg>
-            <span className="text-xs">Settings</span>
-          </Link>
-        </div>
-      </footer>
-    );
-  }
+//           <Link to="/settings" className="flex flex-col items-center gap-1 text-gray-400">
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//               <circle cx="12" cy="12" r="3" strokeWidth="2" />
+//               <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" strokeWidth="2" />
+//             </svg>
+//             <span className="text-xs">Settings</span>
+//           </Link>
+//         </div>
+//       </footer>
+//     );
+//   }
 
   // 🔹 NOT LOGGED-IN FOOTER (Website Footer)
   // return (
@@ -119,6 +119,78 @@ function Footer() {
   //     </div>
   //   </footer>
   // );
+//   return null;
+// }
+
+// export default Footer;
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { User } from "lucide-react";
+
+function Footer() {
+  const user = useSelector((state: any) => state.auth.user);
+  const isLoggedIn = !!user;
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // 👇 Reactively watch body class changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsMenuOpen(document.body.classList.contains("menu-open"));
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    // initial check
+    setIsMenuOpen(document.body.classList.contains("menu-open"));
+
+    return () => observer.disconnect();
+  }, []);
+
+  // 🚫 Hide footer when mobile menu is open
+  if (isLoggedIn && isMenuOpen) return null;
+
+  // 🔹 LOGGED-IN FOOTER (Mobile Bottom Nav)
+  if (isLoggedIn) {
+    return (
+      <footer className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-gray-800 px-4 py-2 z-40">
+        <div className="flex items-center justify-around">
+          <Link to="/home" className="flex flex-col items-center gap-1 text-white">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+            <span className="text-xs">Home</span>
+          </Link>
+
+          <Link to="/pricing" className="flex flex-col items-center gap-1 text-gray-400">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1" strokeWidth="2" />
+              <rect x="14" y="3" width="7" height="7" rx="1" strokeWidth="2" />
+              <rect x="14" y="14" width="7" height="7" rx="1" strokeWidth="2" />
+              <rect x="3" y="14" width="7" height="7" rx="1" strokeWidth="2" />
+            </svg>
+            <span className="text-xs">Plans</span>
+          </Link>
+
+          <Link to="/my-list" className="flex flex-col items-center gap-1 text-gray-400">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M19 11H5M19 11V19H5V11M7 7h10v4H7z" strokeWidth="2" />
+            </svg>
+            <span className="text-xs">My List</span>
+          </Link>
+
+          <Link to="/profile" className="flex flex-col items-center gap-1 text-gray-400">
+            <User className="w-6 h-6" />
+            <span className="text-xs">My Profile</span>
+          </Link>
+        </div>
+      </footer>
+    );
+  }
   return null;
 }
 

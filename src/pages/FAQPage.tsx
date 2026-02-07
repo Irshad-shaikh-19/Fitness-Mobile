@@ -1,6 +1,7 @@
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const faqs = [
   {
@@ -52,6 +53,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FAQPage() {
+    const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#0D0F14] text-white">
       {/* <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-[#0D0F14]/95 backdrop-blur-sm border-b border-gray-800">
@@ -88,7 +91,7 @@ export default function FAQPage() {
             <p className="text-gray-400 mb-4">
               Our support team is here to help you 24/7.
             </p>
-            <Button className="bg-[#F97316] hover:bg-[#F97316]/90 text-black font-bold">
+            <Button onClick={()=>navigate('/contact')} className="bg-[#F97316] hover:bg-[#F97316]/90 text-black font-bold">
               Contact Support
             </Button>
           </div>
