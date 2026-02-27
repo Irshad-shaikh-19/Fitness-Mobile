@@ -23,6 +23,121 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import Swal from "sweetalert2";
+import {
+  useGetEmailAlertSettingsQuery,
+  useUpdateEmailAlertSettingsMutation,
+} from "@/store/api/pages/emailAlertSettingApi";
+
+
+function NotificationsTab() {
+  const { data, isLoading } = useGetEmailAlertSettingsQuery();
+  const [updateEmailAlertSettings] = useUpdateEmailAlertSettingsMutation();
+
+  const handleToggle = async (
+    field: "new_content_alert" | "promotional_emails" | "workout_reminders",
+    value: boolean
+  ) => {
+    try {
+      await updateEmailAlertSettings({ [field]: value }).unwrap();
+      // Swal.fire({
+      //   toast: true,
+      //   position: "top-end",
+      //   icon: "success",
+      //   title: "Notification preference updated",
+      //   showConfirmButton: false,
+      //   timer: 2000,
+      //   timerProgressBar: true,
+      //   background: "#1f2937",
+      //   color: "#fff",
+      // });
+      Swal.fire({
+  title: "Updated!",
+  text: "Notification preference saved successfully.",
+  icon: "success",
+  confirmButtonText: "OK",
+  background: "#1f2937",
+  color: "#fff",
+  confirmButtonColor: "#F97316",
+});
+    } catch {
+      // Swal.fire({
+      //   toast: true,
+      //   position: "top-end",
+      //   icon: "error",
+      //   title: "Failed to update preference",
+      //   showConfirmButton: false,
+      //   timer: 2000,
+      //   timerProgressBar: true,
+      //   background: "#1f2937",
+      //   color: "#fff",
+      // });
+      Swal.fire({
+  title: "Failed!",
+  text: "Failed to update notification preference.",
+  icon: "error",
+  confirmButtonText: "OK",
+  background: "#1f2937",
+  color: "#fff",
+  confirmButtonColor: "#F97316",
+});
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    );
+  }
+
+  const settings = data?.data;
+
+  return (
+    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+      <h2 className="text-xl font-bold mb-6">Email Notifications</h2>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div>
+            <p className="font-medium">New Content Alerts</p>
+            <p className="text-sm text-gray-400">
+              Get notified when new workouts are added
+            </p>
+          </div>
+          <Switch
+            checked={settings?.new_content_alert ?? true}
+            onCheckedChange={(val) => handleToggle("new_content_alert", val)}
+          />
+        </div>
+        <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div>
+            <p className="font-medium">Promotional Emails</p>
+            <p className="text-sm text-gray-400">
+              Receive offers, deals, and promotions
+            </p>
+          </div>
+          <Switch
+            checked={settings?.promotional_emails ?? true}
+            onCheckedChange={(val) => handleToggle("promotional_emails", val)}
+          />
+        </div>
+        <div className="flex items-center justify-between py-3">
+          <div>
+            <p className="font-medium">Workout Reminders</p>
+            <p className="text-sm text-gray-400">
+              Get reminded to continue your workouts
+            </p>
+          </div>
+          <Switch
+            checked={settings?.workout_reminders ?? true}
+            onCheckedChange={(val) => handleToggle("workout_reminders", val)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 
@@ -173,10 +288,10 @@ const handleUpdateProfile = () => {
             <User className="w-7 h-7 sm:w-8 sm:h-8 text-[#F97316]" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold truncate">
-              {Dummyuser.firstName} {Dummyuser.lastName}
-            </h1>
-            <p className="text-gray-400 truncate">{Dummyuser.email}</p>
+           <h1 className="text-xl sm:text-2xl font-bold truncate">
+  {name.replace(/\b\w/g, (c) => c.toUpperCase())}
+</h1>
+            <p className="text-gray-400 truncate">{email}</p>
           </div>
         </div>
 
@@ -424,40 +539,9 @@ const handleUpdateProfile = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="notifications" className="space-y-6">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-xl font-bold mb-6">Email Notifications</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <div>
-                    <p className="font-medium">New Content Alerts</p>
-                    <p className="text-sm text-gray-400">
-                      Get notified when new workouts are added
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <div>
-                    <p className="font-medium">Promotional Emails</p>
-                    <p className="text-sm text-gray-400">
-                      Receive offers, deals, and promotions
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <div>
-                    <p className="font-medium">Workout Reminders</p>
-                    <p className="text-sm text-gray-400">
-                      Get reminded to continue your workouts
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+        <TabsContent value="notifications" className="space-y-6">
+  <NotificationsTab />
+</TabsContent>
 
           {/* BILLING */}
           <TabsContent value="billing" className="space-y-6">

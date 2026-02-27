@@ -87,7 +87,9 @@ export const privateRoutes: RouteConfig[] = [
   { path: "/subscription-required", element: SubscriptionRequiredPage },
   { path: "/search", element: SearchPage },
   { path: "/my-list", element: MyListPage },
-  { path: "/category/:id", element: CategoryPage },
+  { path: "/category/:categoryId", element: CategoryPage },
+    { path: "/category", element: CategoryPage },
+
   {path:"/workout/:id", element:WorkoutPlayerPage},
   {path:"/downloads", element:DownloadsPage}
 

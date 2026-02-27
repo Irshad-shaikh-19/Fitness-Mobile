@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Edit, Settings, User, HelpCircle, Share2,Film } from "lucide-react";
+import { Edit, Settings, User, HelpCircle, Share2, Film } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "@/store/api/authApi";
@@ -57,14 +57,13 @@ export default function BottomMenu({ isOpen, onClose }: BottomMenuProps) {
           {/* Menu Items */}
           <div className="space-y-0">
 
-   <button
+            <button
               onClick={() => handleNavigate("/account")}
               className="w-full flex items-center gap-4 px-4 py-4 text-white hover:bg-gray-800/50 rounded-lg transition"
             >
               <User className="w-6 h-6" />
               <span className="text-lg">Account</span>
             </button>
-
 
             {/* <button
               onClick={() => handleNavigate("/manage-profiles")}
@@ -74,15 +73,15 @@ export default function BottomMenu({ isOpen, onClose }: BottomMenuProps) {
               <span className="text-lg">Manage Profiles</span>
             </button> */}
 
+            {/* Updated Categories button - navigate to /category without ID */}
             <button
-              onClick={() => handleNavigate("/category/all")}
+              onClick={() => handleNavigate("/category")}
               className="w-full flex items-center gap-4 px-4 py-4 text-white hover:bg-gray-800/50 rounded-lg transition"
             >
               <Film className="w-6 h-6" />
               <span className="text-lg">Categories</span>
             </button>
 
-         
             <button
               onClick={() => handleNavigate("/help-centre")}
               className="w-full flex items-center gap-4 px-4 py-4 text-white hover:bg-gray-800/50 rounded-lg transition"
