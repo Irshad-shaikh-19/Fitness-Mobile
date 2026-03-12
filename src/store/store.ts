@@ -13,7 +13,8 @@ import { mobileHeroSliderApi } from "./api/pages/mobileHeroSliderApi";
 import { myListApi } from "./api/pages/myListApi";
 import { videoDownloadApi } from "./api/pages/videoDownloadApi";
 import { emailAlertSettingApi } from "./api/pages/emailAlertSettingApi";
-
+import { planApi } from "./api/pages/planApi";
+import { subscriptionApi } from "./api/pages/userSubscriptionApi";
 
 const authPersistConfig = {
   key: "auth",
@@ -34,6 +35,8 @@ const rootReducer = combineReducers({
   [myListApi.reducerPath]: myListApi.reducer,
   [videoDownloadApi.reducerPath]: videoDownloadApi.reducer,
   [emailAlertSettingApi.reducerPath]: emailAlertSettingApi.reducer,
+  [planApi.reducerPath]: planApi.reducer,
+  [subscriptionApi.reducerPath]: subscriptionApi.reducer,
 
 
 });
@@ -56,6 +59,8 @@ export const store = configureStore({
       .concat(myListApi.middleware)
       .concat(videoDownloadApi.middleware)
       .concat(emailAlertSettingApi.middleware)
+      .concat(planApi.middleware)
+      .concat(subscriptionApi.middleware)
 
 });
 

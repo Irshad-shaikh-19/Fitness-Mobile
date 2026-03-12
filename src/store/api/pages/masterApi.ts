@@ -56,7 +56,7 @@ export const masterApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_BACKEND_URL + "/api",
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem("ottplusToken");
+      const token = localStorage.getItem("fitnessFlicksToken");
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
