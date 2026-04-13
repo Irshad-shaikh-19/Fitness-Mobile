@@ -7,6 +7,7 @@ import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loginUser } from "@/store/api/authApi";
+import { subscriptionApi } from "@/store/api/pages/userSubscriptionApi";
 
 const LoginPage = () => {
   const dispatch = useDispatch<any>();
@@ -33,27 +34,50 @@ const LoginPage = () => {
       setLoading(true);
 
       try {
+        // deviceId & deviceName are attached automatically inside loginUser action
         const res = await dispatch(loginUser(values));
-if (!res) return;
+        if (!res) return;
 
-if (res.requiresVerification) {
-  navigate("/verify-otp", {
-    state: {
-      email: res.email || values.email,
-      name: res.name,
-      tempToken: res.tempToken,
-      fromLogin: true,
-    },
-  });
-  return;
-}
+        // ✅ OTP verification required
+        if (res.requiresVerification) {
+          navigate("/verify-otp", {
+            state: {
+              email: res.email || values.email,
+              name: res.name,
+              tempToken: res.tempToken,
+              fromLogin: true,
+            },
+          });
+          return;
+        }
 
-if (res.success) {
-  navigate("/dashboard");
-}
+        // 🚫 Device limit reached — Swal already shown in action
+        if (res.deviceLimitReached) {
+          return;
+        }
 
+        // ✅ Login successful — check subscription using subscriptionApi
+        if (res.success) {
+          // Use RTK Query initiate to imperatively call the endpoint
+          // forceRefetch: true ensures it doesn't use stale cached data
+          const subResult = await dispatch(
+            subscriptionApi.endpoints.getMySubscription.initiate(undefined, {
+              forceRefetch: true,
+            })
+          );
+
+          const hasSubscription = !!(subResult?.data?.data?.subscription);
+
+          if (hasSubscription) {
+            navigate("/home");
+          } else {
+            navigate("/pricing");
+          }
+        }
       } catch (error) {
         console.error("Login error:", error);
+        // On any error during subscription check, default to home
+        navigate("/home");
       } finally {
         setLoading(false);
       }

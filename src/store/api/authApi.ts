@@ -1,8 +1,9 @@
 import Swal from "sweetalert2";
-import { fetcher, fetcherPost, fetcherUpdate } from "../../utils/axios";
+import { fetcher, fetcherPost, fetcherUpdate, fetcherDelete } from "../../utils/axios";
 import { setUser, clearUser } from "../slice/authSlice";
 import { Dispatch } from "redux";
 import { persistor } from "../store";
+import { getDeviceId, getDeviceName } from "../../utils/deviceId";
 
 // REGISTER USER
 export const registerUser =
@@ -125,10 +126,29 @@ export const loginUser =
   (formData: any) =>
   async (dispatch: Dispatch<any>): Promise<any> => {
     try {
-      const res: any = await fetcherPost(["/user/login", formData]);
+      // Attach deviceId and deviceName automatically
+      const payload = {
+        ...formData,
+        deviceId: getDeviceId(),
+        deviceName: getDeviceName(),
+      };
 
-      const { token, user } = res.data;
+      const res: any = await fetcherPost(["/user/login", payload]);
 
+      // res is { success, message, data: { token, user } }
+      const token = res?.data?.token;
+      const user = res?.data?.user;
+
+      if (!token || !user) {
+        Swal.fire({
+          icon: "error",
+          title: "Login Failed",
+          text: "Unexpected response from server. Please try again.",
+        });
+        return { success: false };
+      }
+
+      // ✅ Always save token and user if login succeeded
       localStorage.setItem("fitnessFlicksToken", token);
       dispatch(setUser(user));
 
@@ -143,7 +163,7 @@ export const loginUser =
     } catch (error: any) {
       const err = error?.response?.data;
 
-      // ✅ OTP CASE
+      // ✅ OTP CASE (403 with requiresVerification flag)
       if (err?.error?.requiresVerification) {
         return {
           success: false,
@@ -152,6 +172,31 @@ export const loginUser =
           email: err.error.email,
           name: err.error.name,
         };
+      }
+
+      // 🚫 DEVICE LIMIT REACHED (429)
+      if (error?.response?.status === 429) {
+        const { maxDevices, activeSessionCount } = err?.error || {};
+        Swal.fire({
+          icon: "warning",
+          title: "Device Limit Reached",
+          html: `
+            <p>${err?.message || "You have reached your device limit."}</p>
+            ${
+              maxDevices
+                ? `<p style="margin-top:8px;font-size:13px;color:#888">
+                    Active devices: <strong>${activeSessionCount}</strong> / <strong>${maxDevices}</strong>
+                  </p>`
+                : ""
+            }
+            <p style="margin-top:8px;font-size:13px;color:#888">
+              Please log out from another device and try again.
+            </p>
+          `,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#F97316",
+        });
+        return { success: false, deviceLimitReached: true };
       }
 
       // ❌ WRONG PASSWORD / OTHER ERRORS
@@ -187,33 +232,30 @@ export const logoutUser =
   () =>
   async (dispatch: Dispatch<any>): Promise<boolean> => {
     try {
-      // Remove auth token
-      localStorage.removeItem("fitnessFlicksToken");
-
-      dispatch(clearUser());
-
-      await persistor.purge();
-
-      Swal.fire({
-        icon: "success",
-        title: "Logged Out",
-        text: "You have been logged out successfully.",
-        timer: 1200,
-        showConfirmButton: false,
-      });
-
-      return true;
+      // Call backend to deactivate this device session
+      await fetcherPost(["/user/logout", {}]);
     } catch (error: any) {
-      console.error("Logout error:", error);
-      return false;
+      // Even if backend call fails, still clear local state
+      console.error("Backend logout error:", error);
+    } finally {
+      // Always clear local auth regardless of backend response
+      localStorage.removeItem("fitnessFlicksToken");
+      dispatch(clearUser());
+      await persistor.purge();
     }
+
+    Swal.fire({
+      icon: "success",
+      title: "Logged Out",
+      text: "You have been logged out successfully.",
+      timer: 1200,
+      showConfirmButton: false,
+    });
+
+    return true;
   };
 
-
-
-
-
-  // UPDATE USER PROFILE
+// UPDATE USER PROFILE
 export const updateUserProfile =
   (profileData: {
     name?: string;
@@ -223,10 +265,7 @@ export const updateUserProfile =
   }) =>
   async (dispatch: Dispatch<any>): Promise<any> => {
     try {
-      const res: any = await fetcherUpdate([
-        "/user/profile",
-        profileData,
-      ]);
+      const res: any = await fetcherUpdate(["/user/profile", profileData]);
 
       if (!res?.success) {
         Swal.fire({
@@ -261,10 +300,7 @@ export const updateUserProfile =
     }
   };
 
-
-
-
-  // CHANGE PASSWORD
+// CHANGE PASSWORD
 export const changePassword =
   (passwordData: {
     oldPassword: string;
@@ -292,6 +328,59 @@ export const changePassword =
         title: "Password Updated",
         text: "Your password has been changed successfully.",
         timer: 2000,
+        showConfirmButton: false,
+      });
+
+      return true;
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      });
+      return false;
+    }
+  };
+
+// GET ACTIVE DEVICE SESSIONS
+export const getActiveSessions =
+  () =>
+  async (dispatch: Dispatch<any>): Promise<any> => {
+    try {
+      const res: any = await fetcher("/user/sessions");
+
+      if (!res?.success) return null;
+
+      return res.data;
+    } catch (error: any) {
+      console.error("Get sessions error:", error);
+      return null;
+    }
+  };
+
+// LOGOUT A SPECIFIC DEVICE SESSION
+export const logoutDevice =
+  (sessionId: string) =>
+  async (dispatch: Dispatch<any>): Promise<boolean> => {
+    try {
+      const res: any = await fetcherDelete(`/user/sessions/${sessionId}`);
+
+      if (!res?.success) {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: res?.message || "Failed to log out device.",
+        });
+        return false;
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Device Logged Out",
+        text: "The device has been logged out successfully.",
+        timer: 1500,
         showConfirmButton: false,
       });
 

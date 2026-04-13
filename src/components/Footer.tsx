@@ -124,15 +124,18 @@
 
 // export default Footer;
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { User } from "lucide-react";
 
 function Footer() {
   const user = useSelector((state: any) => state.auth.user);
   const isLoggedIn = !!user;
-
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Helper to check if a path is active
+  const isActive = (path: string) => location.pathname === path;
 
   // 👇 Reactively watch body class changes
   useEffect(() => {
@@ -159,15 +162,30 @@ function Footer() {
     return (
       <footer className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-gray-800 px-4 py-2 z-40">
         <div className="flex items-center justify-around">
-          <Link to="/home" className="flex flex-col items-center gap-1 text-white">
+          <Link
+            to="/home"
+            className={`flex flex-col items-center gap-1 ${
+              isActive("/home") ? "text-white" : "text-gray-400"
+            }`}
+          >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
             <span className="text-xs">Home</span>
           </Link>
 
-          <Link to="/pricing" className="flex flex-col items-center gap-1 text-gray-400">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Link
+            to="/pricing"
+            className={`flex flex-col items-center gap-1 ${
+              isActive("/pricing") ? "text-white" : "text-gray-400"
+            }`}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <rect x="3" y="3" width="7" height="7" rx="1" strokeWidth="2" />
               <rect x="14" y="3" width="7" height="7" rx="1" strokeWidth="2" />
               <rect x="14" y="14" width="7" height="7" rx="1" strokeWidth="2" />
@@ -176,14 +194,32 @@ function Footer() {
             <span className="text-xs">Plans</span>
           </Link>
 
-          <Link to="/my-list" className="flex flex-col items-center gap-1 text-gray-400">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M19 11H5M19 11V19H5V11M7 7h10v4H7z" strokeWidth="2" />
+          <Link
+            to="/my-list"
+            className={`flex flex-col items-center gap-1 ${
+              isActive("/my-list") ? "text-white" : "text-gray-400"
+            }`}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 11H5M19 11V19H5V11M7 7h10v4H7z"
+                strokeWidth="2"
+              />
             </svg>
             <span className="text-xs">My List</span>
           </Link>
 
-          <Link to="/profile" className="flex flex-col items-center gap-1 text-gray-400">
+          <Link
+            to="/profile"
+            className={`flex flex-col items-center gap-1 ${
+              isActive("/profile") ? "text-white" : "text-gray-400"
+            }`}
+          >
             <User className="w-6 h-6" />
             <span className="text-xs">My Profile</span>
           </Link>

@@ -33,16 +33,22 @@ axiosServices.interceptors.request.use(
 axiosServices.interceptors.response.use(
   (response: AxiosResponse): AxiosResponse => response,
   (error: AxiosError): Promise<AxiosError> => {
+    const status = error.response?.status;
+    const url = error.config?.url || "";
+
+    // Only auto-redirect on 401 for protected routes, NOT for login/auth endpoints
     if (
-      error.response?.status === 401 &&
-      !window.location.pathname.includes("/login")
+      status === 401 &&
+      !window.location.pathname.includes("/login") &&
+      !url.includes("/user/login") &&
+      !url.includes("/user/verify-otp") &&
+      !url.includes("/user/register")
     ) {
-      // Token expired or unauthorized
       localStorage.removeItem("fitnessFlicksToken");
       window.location.href = "/login";
     }
 
-    if (error.response?.status === 500) {
+    if (status === 500) {
       console.error("Internal Server Error:", error);
     }
 

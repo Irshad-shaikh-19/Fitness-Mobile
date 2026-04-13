@@ -91,13 +91,14 @@ export const privateRoutes: RouteConfig[] = [
     { path: "/category", element: CategoryPage },
 
   {path:"/workout/:id", element:WorkoutPlayerPage},
-  {path:"/downloads", element:DownloadsPage}
+  {path:"/downloads", element:DownloadsPage},
+  { path: "/pricing", element: PricingPage },
+  { path: "/profile", element: ProfilePage },
 
 ];
 
 // Common routes - Accessible by everyone (both authenticated and non-authenticated)
 export const commonRoutes: RouteConfig[] = [
-  { path: "/pricing", element: PricingPage },
   { path: "/about", element: AboutPage },
   { path: "/faq", element: FAQPage },
   { path: "/help-centre", element: HelpCentrePage },
@@ -112,7 +113,6 @@ export const commonRoutes: RouteConfig[] = [
   { path: "/corporate", element: CorporateInfoPage },
   { path: "/legal", element: LegalNoticesPage },
   { path: "/speed-test", element: SpeedTestPage },
-  { path: "/profile", element: ProfilePage },
 ];
 
 // Export all routes combined (for reference)

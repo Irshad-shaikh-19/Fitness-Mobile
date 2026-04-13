@@ -1,12 +1,21 @@
-import { Check, Crown, Zap, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Check, Crown, Zap, AlertCircle, X, CreditCard, Lock } from "lucide-react";
 import { useGetPlansQuery } from "@/store/api/pages/planApi";
 import {
-  useBuyPlanMutation,
   useGetMySubscriptionQuery,
   useCancelSubscriptionMutation,
 } from "@/store/api/pages/userSubscriptionApi";
 import Swal from "sweetalert2";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 // ── Helpers ───────────────────────────────────────────────
 const getDaysRemaining = (expiresAt: string): number => {
@@ -14,11 +23,251 @@ const getDaysRemaining = (expiresAt: string): number => {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 };
 
-// ── Component ─────────────────────────────────────────────
+// ── Payment Form Component ─────────────────────────────────
+const PaymentForm = ({
+  planId,
+  planName,
+  amount,
+  onSuccess,
+  onCancel,
+}: {
+  planId: string;
+  planName: string;
+  amount: number;
+  onSuccess: () => void;
+  onCancel: () => void;
+}) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Step 1: Create payment intent
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/payments/create-intent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("fitnessFlicksToken")}`,
+          },
+          body: JSON.stringify({ planId }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to create payment intent");
+      }
+
+      const { clientSecret, paymentIntentId } = data.data;
+
+      // Step 2: Confirm payment with Stripe
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) throw new Error("Card element not found");
+
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: "Customer",
+            },
+          },
+        }
+      );
+
+      if (stripeError) {
+        throw new Error(stripeError.message);
+      }
+
+      if (paymentIntent.status === "succeeded") {
+        // Step 3: Confirm with backend
+        const confirmResponse = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/payments/confirm`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("fitnessFlicksToken")}`,
+            },
+            body: JSON.stringify({ paymentIntentId }),
+          }
+        );
+
+        const confirmData = await confirmResponse.json();
+
+        if (!confirmData.success) {
+          throw new Error(confirmData.message || "Failed to confirm payment");
+        }
+
+        await Swal.fire({
+          title: "Payment Successful! 🎉",
+          html: `<div style="color: #9ca3af;">
+            Your <strong style="color: #F97316;">${planName}</strong> plan is now active.<br/>
+            You can start enjoying your content immediately.
+          </div>`,
+          icon: "success",
+          background: "#111827",
+          color: "#f9fafb",
+          confirmButtonColor: "#F97316",
+        });
+
+        onSuccess();
+      }
+    } catch (err: any) {
+      setError(err.message);
+      Swal.fire({
+        title: "Payment Failed",
+        text: err.message,
+        icon: "error",
+        background: "#111827",
+        color: "#f9fafb",
+        confirmButtonColor: "#F97316",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const cardElementOptions = {
+    style: {
+      base: {
+        fontSize: "16px",
+        color: "#f9fafb",
+        fontFamily: "Inter, system-ui, sans-serif",
+        "::placeholder": {
+          color: "#6b7280",
+        },
+        padding: "12px",
+      },
+      invalid: {
+        color: "#ef4444",
+      },
+    },
+    hidePostalCode: true,
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Card Details
+        </label>
+        <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+          <CardElement options={cardElementOptions} />
+        </div>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      </div>
+
+      <div className="flex items-center justify-between gap-4 pt-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isProcessing}
+          className="flex-1 py-2.5 px-4 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors text-white font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || isProcessing}
+          className="flex-1 py-2.5 px-4 rounded-lg bg-[#F97316] hover:bg-[#F97316]/90 text-black font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isProcessing ? (
+            <>
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <Lock className="w-4 h-4" />
+              Pay ${amount}
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="text-center text-xs text-gray-500 flex items-center justify-center gap-2 pt-2">
+        <CreditCard className="w-3 h-3" />
+        <span>Secure payment powered by Stripe</span>
+      </div>
+    </form>
+  );
+};
+
+// ── Modal Component ───────────────────────────────────────
+const PaymentModal = ({
+  isOpen,
+  onClose,
+  plan,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  plan: any;
+  onSuccess: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="bg-gray-900 rounded-2xl max-w-md w-full border border-gray-800 shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+          <div>
+            <h2 className="text-xl font-bold text-white">Subscribe to {plan.plan_name}</h2>
+            <p className="text-gray-400 text-sm mt-1">
+              ${plan.monthly_price}/month
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <Elements stripe={stripePromise}>
+            <PaymentForm
+              planId={plan._id}
+              planName={plan.plan_name}
+              amount={plan.monthly_price}
+              onSuccess={onSuccess}
+              onCancel={onClose}
+            />
+          </Elements>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main Component ───────────────────────────────────────
 export default function PricingPage() {
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Plans
-  const { data: plansData, isLoading: plansLoading, isError: plansError } =
-    useGetPlansQuery({ page: 1, limit: 10, is_active: true });
+  const {
+    data: plansData,
+    isLoading: plansLoading,
+    isError: plansError,
+  } = useGetPlansQuery({ page: 1, limit: 10, is_active: true });
   const plans = plansData?.data?.plans || [];
 
   // Active subscription
@@ -30,76 +279,17 @@ export default function PricingPage() {
   const activeSub = subscriptionData?.data?.subscription ?? null;
 
   // Mutations
-  const [buyPlan, { isLoading: buying }] = useBuyPlanMutation();
   const [cancelSubscription, { isLoading: cancelling }] = useCancelSubscriptionMutation();
 
-  // ── Buy Handler ────────────────────────────────────────
-  const handleBuy = async (plan: any) => {
-    const result = await Swal.fire({
-      title: `Subscribe to ${plan.plan_name}?`,
-      html: `
-        <div style="color: #9ca3af; font-size: 15px; line-height: 1.8;">
-          You're about to subscribe to the
-          <strong style="color: #f9fafb;">${plan.plan_name}</strong> plan.<br/>
-          <br/>
-          <span style="font-size: 28px; font-weight: 700; color: #F97316;">
-            $${plan.monthly_price}
-          </span>
-          <span style="color: #9ca3af;">/month</span><br/>
-          <br/>
-          <span style="background: #1f2937; padding: 6px 14px; border-radius: 999px; font-size: 13px;">
-            ${plan.resolution} &nbsp;·&nbsp; ${plan.video_sound_quality} quality
-            &nbsp;·&nbsp; ${plan.duration} days access
-          </span>
-          ${
-            activeSub
-              ? `<br/><br/><span style="color:#f59e0b; font-size:13px;">
-                  ⚠️ Your current <strong>${activeSub.planId?.plan_name}</strong> plan
-                  will be cancelled and replaced.
-                </span>`
-              : ""
-          }
-        </div>
-      `,
-      background: "#111827",
-      color: "#f9fafb",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Subscribe!",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#F97316",
-      cancelButtonColor: "#374151",
-      reverseButtons: true,
-    });
+  // ── Payment Handlers ────────────────────────────────────
+  const handleSubscribe = (plan: any) => {
+    setSelectedPlan(plan);
+    setIsModalOpen(true);
+  };
 
-    if (!result.isConfirmed) return;
-
-    try {
-      await buyPlan({ planId: plan._id }).unwrap();
-
-      await Swal.fire({
-        title: "You're all set! 🎉",
-        html: `<div style="color: #9ca3af;">
-          Your <strong style="color: #F97316;">${plan.plan_name}</strong> plan
-          is now active. Enjoy your workouts!
-        </div>`,
-        icon: "success",
-        background: "#111827",
-        color: "#f9fafb",
-        confirmButtonColor: "#F97316",
-        confirmButtonText: "Start Watching",
-      });
-
-      refetchSubscription();
-    } catch (err: any) {
-      Swal.fire({
-        title: "Oops!",
-        text: err?.data?.message || "Something went wrong. Please try again.",
-        icon: "error",
-        background: "#111827",
-        color: "#f9fafb",
-        confirmButtonColor: "#F97316",
-      });
-    }
+  const handlePaymentSuccess = async () => {
+    await refetchSubscription();
+    setIsModalOpen(false);
   };
 
   // ── Cancel Handler ─────────────────────────────────────
@@ -154,10 +344,9 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#0D0F14] text-white">
       <main className="py-16 px-6 md:px-12">
         <div className="max-w-6xl mx-auto">
-
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
               Choose Your Plan
             </h1>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
@@ -206,15 +395,13 @@ export default function PricingPage() {
                       })}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={handleCancel}
                     disabled={cancelling}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/30 text-xs"
+                    className="px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     {cancelling ? "Cancelling..." : "Cancel Plan"}
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -223,6 +410,7 @@ export default function PricingPage() {
           {/* Loading State */}
           {(plansLoading || subLoading) && (
             <div className="text-center text-gray-400 text-lg py-20">
+              <div className="w-12 h-12 border-4 border-[#F97316] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               Loading plans...
             </div>
           )}
@@ -246,17 +434,16 @@ export default function PricingPage() {
                 plans.map((plan: any, index: number) => {
                   const isPopular = index === 1;
                   const isCurrent = activeSub?.planId?._id === plan._id;
-                  const isBuying = buying;
 
                   return (
                     <div
                       key={plan._id}
-                      className={`relative rounded-2xl p-8 transition-all duration-200 ${
+                      className={`relative rounded-2xl p-8 transition-all duration-200 transform hover:scale-105 ${
                         isCurrent
-                          ? "bg-gray-900/50 border-2 border-green-500/60"
+                          ? "bg-gradient-to-b from-green-500/10 to-gray-900/50 border-2 border-green-500/60"
                           : isPopular
                           ? "bg-gradient-to-b from-[#F97316]/20 to-gray-900/50 border-2 border-[#F97316]"
-                          : "bg-gray-900/50 border border-gray-800"
+                          : "bg-gray-900/50 border border-gray-800 hover:border-[#F97316]/30"
                       }`}
                     >
                       {/* Badges */}
@@ -308,49 +495,23 @@ export default function PricingPage() {
 
                       {/* CTA Button */}
                       {isCurrent ? (
-                        <Button
+                        <button
                           disabled
-                          className="w-full py-6 text-lg font-bold bg-green-500/20 text-green-400 border border-green-500/40 cursor-default"
+                          className="w-full py-3 text-lg font-bold bg-green-500/20 text-green-400 border border-green-500/40 rounded-xl cursor-default"
                         >
                           ✓ Active Plan
-                        </Button>
+                        </button>
                       ) : (
-                        <Button
-                          onClick={() => handleBuy(plan)}
-                          disabled={isBuying}
-                          className={`w-full py-6 text-lg font-bold transition-all ${
+                        <button
+                          onClick={() => handleSubscribe(plan)}
+                          className={`w-full py-3 text-lg font-bold rounded-xl transition-all transform hover:scale-105 ${
                             isPopular
-                              ? "bg-[#F97316] hover:bg-[#F97316]/90 text-black"
-                              : "bg-gray-800 hover:bg-gray-700"
+                              ? "bg-[#F97316] hover:bg-[#F97316]/90 text-black shadow-lg"
+                              : "bg-gray-800 hover:bg-gray-700 text-white"
                           }`}
                         >
-                          {isBuying ? (
-                            <span className="flex items-center justify-center gap-2">
-                              <svg
-                                className="animate-spin w-5 h-5"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                              >
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                />
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8v8H4z"
-                                />
-                              </svg>
-                              Processing...
-                            </span>
-                          ) : (
-                            "Subscribe Now"
-                          )}
-                        </Button>
+                          Subscribe Now
+                        </button>
                       )}
                     </div>
                   );
@@ -360,6 +521,16 @@ export default function PricingPage() {
           )}
         </div>
       </main>
+
+      {/* Payment Modal */}
+      {selectedPlan && (
+        <PaymentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          plan={selectedPlan}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }
